@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Baixar assets - Copa Escape 3D</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020814;
+        --panel: rgba(6, 17, 38, 0.86);
+        --line: rgba(96, 165, 250, 0.3);
+        --gold: #ffd700;
+        --blue: #0a4fff;
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        background:
+          radial-gradient(circle at 82% 16%, rgba(255, 215, 0, 0.18), transparent 32%),
+          radial-gradient(circle at 12% 20%, rgba(10, 79, 255, 0.24), transparent 38%),
+          linear-gradient(135deg, #020814, #061126 58%, #020814);
+        color: var(--text);
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      main {
+        width: min(880px, 100%);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: clamp(22px, 4vw, 40px);
+        background: var(--panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+        backdrop-filter: blur(18px);
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--gold);
+        font-size: clamp(2rem, 5vw, 4rem);
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      p {
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.55;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      a.card {
+        min-height: 150px;
+        display: grid;
+        align-content: space-between;
+        gap: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 12px;
+        padding: 18px;
+        color: var(--text);
+        text-decoration: none;
+        background:
+          linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 8, 20, 0.84)),
+          radial-gradient(circle at 90% 0%, rgba(255, 215, 0, 0.12), transparent 40%);
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      a.card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(255, 215, 0, 0.68);
+        box-shadow: 0 0 28px rgba(255, 215, 0, 0.18);
+      }
+
+      strong {
+        font-size: 1.25rem;
+      }
+
+      span {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .button {
+        width: max-content;
+        border-radius: 999px;
+        padding: 9px 14px;
+        color: #020814;
+        background: var(--gold);
+        font-weight: 900;
+      }
+
+      .fallback {
+        margin-top: 26px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding-top: 18px;
+        font-size: 0.95rem;
+      }
+
+      .fallback a {
+        color: #93c5fd;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Baixar assets</h1>
+      <p>Use estes botoes para baixar os packs gratuitos da Kenney. Se o navegador pedir confirmacao, aceite o download. A licenca indicada nas paginas oficiais e Creative Commons CC0.</p>
+
+      <section class="grid">
+        <a class="card" href="https://kenney.nl/media/pages/assets/sports-pack/ede5629412-1677693282/kenney_sports-pack.zip">
+          <strong>Sports Pack</strong>
+          <span>Itens esportivos, personagens 2D e elementos de campo.</span>
+          <b class="button">Baixar ZIP</b>
+        </a>
+        <a class="card" href="https://kenney.nl/media/pages/assets/game-icons/1ebf9c14af-1677661579/kenney_game-icons.zip">
+          <strong>Game Icons</strong>
+          <span>Icones para HUD, trofeu, pause, mapa, interface e botoes.</span>
+          <b class="button">Baixar ZIP</b>
+        </a>
+        <a class="card" href="https://kenney.nl/media/pages/assets/input-prompts/8de120163f-1777890371/kenney_input-prompts_1.5.zip">
+          <strong>Input Prompts</strong>
+          <span>Icones de teclado, mouse e controles para comandos do jogo.</span>
+          <b class="button">Baixar ZIP</b>
+        </a>
+      </section>
+
+      <p class="fallback">
+        Se algum link direto nao funcionar, abra a pagina oficial e clique em <strong>Download</strong>, depois em <strong>Continue without donating...</strong>:
+        <a href="https://kenney.nl/assets/sports-pack">Sports Pack</a>,
+        <a href="https://kenney.nl/assets/game-icons">Game Icons</a>,
+        <a href="https://kenney.nl/assets/input-prompts">Input Prompts</a>.
+      </p>
+    </main>
+  </body>
+</html>

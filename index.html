@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copa Escape 3D</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+
+      <section id="menu-screen" class="screen home-screen">
+        <div class="home-particles" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+
+        <header class="home-header">
+          <div class="home-logo">
+            <span>Rumo a Taca</span>
+            <strong>Copa do Mundo 2026</strong>
+          </div>
+          <div class="home-account">
+            <div class="team-avatar">
+              <img id="home-team-logo" src="" alt="Selecao escolhida">
+              <span id="home-team-name">Brasil</span>
+            </div>
+            <div class="account-pill">
+              <span>Nivel</span>
+              <strong id="profile-level">1</strong>
+              <small id="header-xp">0/100 XP</small>
+            </div>
+            <div class="account-pill coins-pill">
+              <span>Moedas</span>
+              <strong id="profile-coins">0</strong>
+            </div>
+            <button id="settings-button" class="header-icon-button" aria-label="Configuracoes">⚙</button>
+            <button id="profile-button" class="header-icon-button profile-button" aria-label="Perfil">Perfil</button>
+          </div>
+        </header>
+
+        <main class="home-shell">
+          <section class="home-main">
+            <div class="home-title">
+              <span>Copa Escape 3D</span>
+              <h1>Rumo a Taca</h1>
+              <p>Construa sua campanha, evolua seu jogador e escape dos rivais ate levantar o titulo mundial.</p>
+            </div>
+
+            <article class="home-character-card">
+              <div id="home-player-model" class="home-player-model" aria-hidden="true">
+                <i class="player-shadow"></i>
+                <i class="player-head"></i>
+                <i class="player-body"></i>
+                <i class="player-left-arm"></i>
+                <i class="player-right-arm"></i>
+                <i class="player-left-leg"></i>
+                <i class="player-right-leg"></i>
+              </div>
+              <div>
+                <span>Capitao da selecao</span>
+                <strong id="home-player-label">Brasil #10</strong>
+                <p>Seu personagem entra em campo com as cores da campanha atual.</p>
+              </div>
+            </article>
+
+            <article id="profile-summary" class="progress-card">
+              <div class="progress-card-header">
+                <div>
+                  <span>Progressao do jogador</span>
+                  <strong>Nivel <b id="progress-level">1</b></strong>
+                </div>
+                <em id="progress-percent">0%</em>
+              </div>
+              <div class="profile-xp premium-xp">
+                <span id="profile-xp-label">0/100 XP</span>
+                <i><b id="profile-xp-bar"></b></i>
+              </div>
+              <div class="next-reward">
+                <span>Proxima recompensa</span>
+                <strong id="next-reward-label">+53 moedas</strong>
+              </div>
+            </article>
+
+            <section class="home-feature-row">
+              <article class="daily-reward-card">
+                <span>Recompensa diaria</span>
+                <strong id="daily-reward-title">Proximo premio: 100 moedas</strong>
+                <p id="daily-reward-status">Disponivel hoje.</p>
+                <button id="daily-reward-button">Resgatar</button>
+              </article>
+              <article class="collection-card">
+                <span>Album da Copa</span>
+                <strong id="album-progress-label">0/120 figurinhas</strong>
+                <p id="stadium-progress-label">Estadios: 1/16 desbloqueados</p>
+              </article>
+            </section>
+
+            <section class="hero-play-panel">
+              <button id="play-button" class="play-cta">
+                <span class="play-icon">▶</span>
+                <strong>Jogar</strong>
+                <em>Entrar no torneio</em>
+              </button>
+              <div class="campaign-strip">
+                <div>
+                  <span>Selecao atual</span>
+                  <strong id="campaign-team">Brasil</strong>
+                </div>
+                <div>
+                  <span>Fase atual</span>
+                  <strong id="campaign-stage">Fase 1</strong>
+                </div>
+                <div>
+                  <span>Ultima partida</span>
+                  <strong id="campaign-last">Sem registro</strong>
+                </div>
+                <div>
+                  <span>Melhor marca</span>
+                  <strong id="campaign-best">--:--</strong>
+                </div>
+              </div>
+            </section>
+
+            <article class="campaign-card">
+              <div>
+                <span>Campanha</span>
+                <strong id="campaign-chapter">Capitulo 1</strong>
+              </div>
+              <p id="campaign-objective">Objetivo: colete 3 tacas e escape pelo portal.</p>
+              <em id="campaign-reward">Recompensa: +120 XP / +49 moedas</em>
+            </article>
+
+            <section class="cup-bracket" aria-label="Tabela da Copa">
+              <span>Tabela da Copa</span>
+              <div id="cup-bracket-list"></div>
+            </section>
+
+            <section class="secondary-grid" aria-label="Menu principal">
+              <button id="how-button" class="mode-card">
+                <span class="mode-icon menu-icon-help"></span>
+                <strong>Como Jogar</strong>
+                <p>Aprenda controles, objetivos e formas de escapar.</p>
+              </button>
+              <button id="levels-button" class="mode-card">
+                <span class="mode-icon menu-icon-levels"></span>
+                <strong>Selecionar Fase</strong>
+                <p>Escolha qualquer fase desbloqueada.</p>
+              </button>
+              <button id="ranking-button" class="mode-card">
+                <span class="mode-icon menu-icon-ranking"></span>
+                <strong>Ranking</strong>
+                <p>Compare tempos, moedas e desempenho.</p>
+              </button>
+              <button id="shop-button" class="mode-card">
+                <span class="mode-icon menu-icon-shop"></span>
+                <strong>Loja</strong>
+                <p>Compre uniformes, rastros e comemoracoes.</p>
+              </button>
+              <button id="achievements-button" class="mode-card">
+                <span class="mode-icon menu-icon-achievements"></span>
+                <strong>Conquistas</strong>
+                <p>Veja medalhas, trofeus e recompensas.</p>
+              </button>
+              <button id="daily-button" class="mode-card">
+                <span class="mode-icon menu-icon-daily"></span>
+                <strong>Desafios Diarios</strong>
+                <p>Ganhe recompensas extras todos os dias.</p>
+              </button>
+              <button id="coop-button" class="mode-card">
+                <span class="mode-icon menu-icon-coop"></span>
+                <strong>Coop Local</strong>
+                <p>Jogue com amigos no mesmo computador.</p>
+              </button>
+              <button id="speedrun-button" class="mode-card">
+                <span class="mode-icon menu-icon-cup"></span>
+                <strong>Modo Copa Completa</strong>
+                <p>Jogue todo o torneio em sequencia.</p>
+              </button>
+              <button id="editor-button" class="mode-card expansion-card">
+                <span class="mode-icon menu-icon-editor"></span>
+                <strong>Editor de Fases</strong>
+                <p>Crie mapas, missoes e obstaculos.</p>
+              </button>
+            </section>
+          </section>
+
+          <aside class="activity-panel">
+            <article class="activity-card event-card">
+              <span>Evento Especial</span>
+              <strong>Ganhe 50 moedas</strong>
+              <p>Venca 3 partidas hoje para completar o evento.</p>
+            </article>
+            <article class="activity-card mission-card">
+              <span>Missao Atual</span>
+              <strong>Colete 5 tacas</strong>
+              <div class="mini-progress">
+                <i><b id="mission-progress-bar"></b></i>
+                <em id="mission-progress-label">0/5</em>
+              </div>
+            </article>
+            <article class="activity-card streak-card">
+              <span>Sequencia Atual</span>
+              <strong id="streak-label">0 vitorias consecutivas</strong>
+              <p>Continue vencendo para aumentar a recompensa.</p>
+            </article>
+            <article class="activity-card news-card">
+              <span>Noticias</span>
+              <strong id="news-title">Temporada 2026 ativa</strong>
+              <p id="news-copy">Novos eventos, desafios diarios e recompensas ja estao no menu.</p>
+            </article>
+          </aside>
+        </main>
+
+        <footer class="home-ticker" aria-label="Noticias da temporada">
+          <div>
+            <span>Brasil venceu Argentina</span>
+            <span>Novo desafio disponivel</span>
+            <span>Evento especial ativo</span>
+            <span>Album da Copa recebeu novas figurinhas</span>
+            <span>Final contra El Matador desbloqueada na fase 5</span>
+          </div>
+        </footer>
+      </section>
+
+      <section id="how-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Como jogar</strong>
+        </div>
+        <div class="info-panel">
+          <p>Use WASD ou as setas para correr pelo campo. Segure Shift para arrancar.</p>
+          <p>Colete todas as taças da fase e fuja dos rivais e juízes.</p>
+          <p>Ao vencer fases, novas fases ficam liberadas no menu.</p>
+          <p>Ganhe XP e moedas para desbloquear conquistas, uniformes, rastros, tacas e comemoracoes.</p>
+          <p>Use E para distrair inimigos. Ganhe estrelas por completar, evitar capturas e bater o tempo.</p>
+          <p>No Coop Local, P1 usa WASD/E e P2 usa setas/Enter. O editor permite criar missao, mapa e obstaculos.</p>
+        </div>
+        <button id="how-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="level-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Selecionar fase</strong>
+        </div>
+        <div id="level-grid" class="level-grid"></div>
+        <button id="level-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="team-screen" class="screen hidden">
+        <div class="brand">
+          <span>Copa Escape 3D</span>
+          <strong>Escolha sua seleção</strong>
+        </div>
+        <div id="team-grid" class="team-grid"></div>
+        <button id="start-button" class="primary">Entrar no torneio</button>
+      </section>
+
+      <section id="achievements-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Conquistas</strong>
+        </div>
+        <div id="achievement-grid" class="collection-grid"></div>
+        <button id="achievements-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="daily-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Desafios Diarios</strong>
+        </div>
+        <div id="daily-grid" class="collection-grid"></div>
+        <button id="daily-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="ranking-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Ranking</strong>
+        </div>
+        <div id="ranking-grid" class="collection-grid"></div>
+        <button id="ranking-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="editor-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Editor de Fases</strong>
+        </div>
+        <div class="editor-panel">
+          <label>Missao
+            <select id="editor-mission">
+              <option value="cup">Coletar tacas</option>
+              <option value="switch">Ativar alavancas</option>
+              <option value="tunnel">Escapar pelo tunel</option>
+              <option value="protect">Proteger taca</option>
+            </select>
+          </label>
+          <label>Mapa
+            <select id="editor-map">
+              <option value="balanced">Equilibrado</option>
+              <option value="wide">Aberto</option>
+              <option value="maze">Cheio de obstaculos</option>
+            </select>
+          </label>
+          <label>Objetivos
+            <input id="editor-objectives" type="number" min="1" max="7" value="4" />
+          </label>
+          <label>Obstaculos
+            <input id="editor-obstacles" type="number" min="0" max="18" value="8" />
+          </label>
+          <label>Tema
+            <select id="editor-theme">
+              <option value="1">Brasil</option>
+              <option value="2">Argentina</option>
+              <option value="3">Franca</option>
+              <option value="4">Japao</option>
+              <option value="5">Catar futurista</option>
+              <option value="6">Espacial</option>
+            </select>
+          </label>
+        </div>
+        <div class="quick-actions">
+          <button id="editor-save-button" class="primary">Salvar fase</button>
+          <button id="editor-play-button" class="secondary">Jogar fase criada</button>
+          <button id="editor-back-button" class="secondary">Voltar</button>
+        </div>
+      </section>
+
+      <section id="shop-screen" class="screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Loja</strong>
+        </div>
+        <div id="shop-profile" class="profile-summary panel-profile"></div>
+        <div class="shop-tabs">
+          <button class="shop-tab selected" data-shop-category="uniform">Uniformes</button>
+          <button class="shop-tab" data-shop-category="trail">Corrida</button>
+          <button class="shop-tab" data-shop-category="trophy">Tacas</button>
+          <button class="shop-tab" data-shop-category="celebration">Comemoracoes</button>
+        </div>
+        <div id="shop-grid" class="shop-grid"></div>
+        <button id="shop-back-button" class="secondary">Voltar</button>
+      </section>
+
+      <section id="hud" class="hud hidden">
+        <div class="hud-card hud-team-card">
+          <div>
+            <span>Selecao</span>
+            <strong id="hud-team">Brasil</strong>
+          </div>
+          <img id="hud-team-logo" class="hud-team-logo" src="" alt="Selecao">
+        </div>
+        <div class="hud-card">
+          <div>
+            <span>Fase</span>
+            <strong id="hud-level">1/5</strong>
+          </div>
+        </div>
+        <div class="hud-card hud-trophy-card">
+          <div>
+            <span>Tacas</span>
+            <strong><i class="hud-symbol trophy"></i><b id="hud-cups">0/3</b></strong>
+          </div>
+        </div>
+        <div class="hud-card hud-objective-card">
+          <div>
+            <span>Objetivo</span>
+            <strong id="hud-objective">Colete todas as tacas</strong>
+          </div>
+        </div>
+        <div class="hud-card hud-bonus-card">
+          <div>
+            <span>Bonus</span>
+            <strong><i class="hud-symbol coin"></i><b id="hud-power">0</b></strong>
+          </div>
+        </div>
+        <div class="hud-card hud-stamina-card">
+          <div>
+            <span>Folego</span>
+            <strong><i class="hud-symbol bolt"></i><b id="hud-stamina">100%</b></strong>
+            <i class="hud-meter"><b id="hud-stamina-fill"></b></i>
+          </div>
+        </div>
+      </section>
+
+      <button id="pause-button" class="pause-button hidden" aria-label="Pausar">
+        <span class="pause-icon"></span>
+        <strong>Pausar</strong>
+        <em>ESC</em>
+      </button>
+      <section id="ability-dock" class="ability-dock hidden" aria-label="Habilidades">
+        <div class="ability-action ability-turbo">
+          <span>SHIFT</span>
+          <i></i>
+          <strong>Turbo</strong>
+          <em id="hud-boost-status">No campo</em>
+        </div>
+        <div class="ability-action ability-shield">
+          <span>E</span>
+          <i></i>
+          <strong>Escudo</strong>
+          <em id="hud-shield-status">Indisponivel</em>
+        </div>
+      </section>
+      <canvas id="minimap" class="minimap hidden" width="190" height="190"></canvas>
+      <div class="minimap-label">
+        <kbd>M</kbd>
+        <span>Ver mapa</span>
+      </div>
+
+      <section id="narrator" class="narrator hidden">
+        <i class="narrator-icon" aria-hidden="true"></i>
+        <div>
+          <span>Narrador</span>
+          <strong id="narrator-line">A partida comecou.</strong>
+        </div>
+      </section>
+
+      <section id="cutscene" class="cutscene hidden" aria-live="polite">
+        <div class="cutscene-card">
+          <span id="cutscene-kicker">Copa Escape 3D</span>
+          <strong id="cutscene-title">Entrada das selecoes</strong>
+          <p id="cutscene-copy">A partida vai comecar.</p>
+          <div class="cutscene-teams">
+            <div>
+              <img id="cutscene-team-logo" src="" alt="Selecao">
+              <b id="cutscene-team-name">Brasil</b>
+            </div>
+            <em>VS</em>
+            <div>
+              <img id="cutscene-rival-logo" src="" alt="Rival">
+              <b id="cutscene-rival-name">Rival</b>
+            </div>
+          </div>
+          <i id="cutscene-progress"></i>
+        </div>
+      </section>
+
+      <section id="pause-screen" class="screen pause-screen hidden">
+        <div class="brand compact">
+          <span>Copa Escape 3D</span>
+          <strong>Pausado</strong>
+        </div>
+        <div class="menu-actions">
+          <button id="resume-button" class="primary">Continuar</button>
+          <button id="pause-menu-button" class="secondary">Menu inicial</button>
+        </div>
+      </section>
+
+      <section id="message" class="message hidden">
+        <strong id="message-title">Fase vencida</strong>
+        <span id="message-body">Novos desafios chegaram ao estádio.</span>
+      </section>
+
+      <section id="level-complete-screen" class="screen result-screen hidden">
+        <div class="brand compact">
+          <span id="result-kicker">Fase vencida</span>
+          <strong id="result-title">Você escapou</strong>
+        </div>
+        <div class="stats-panel">
+          <div>
+            <span>Tempo</span>
+            <strong id="stat-time">00:00</strong>
+          </div>
+          <div>
+            <span>Objetivos</span>
+            <strong id="stat-objectives">0/0</strong>
+          </div>
+          <div>
+            <span>Capturas evitadas</span>
+            <strong id="stat-saves">0</strong>
+          </div>
+          <div>
+            <span>Melhor tempo</span>
+            <strong id="stat-best">--:--</strong>
+          </div>
+          <div>
+            <span>Progresso</span>
+            <strong id="stat-reward">+0 XP</strong>
+          </div>
+          <div>
+            <span>Estrelas</span>
+            <strong id="stat-stars">0/3</strong>
+          </div>
+          <div>
+            <span>Ranking</span>
+            <strong id="stat-rank">--</strong>
+          </div>
+        </div>
+        <div id="replay-panel" class="replay-panel">
+          <span>Replay dos melhores momentos</span>
+          <div id="replay-list"></div>
+        </div>
+        <div class="menu-actions">
+          <button id="next-level-button" class="primary">Continuar</button>
+          <button id="result-menu-button" class="secondary">Menu inicial</button>
+        </div>
+      </section>
+
+      <section id="game-over" class="screen hidden">
+        <div class="brand">
+          <span id="end-kicker">Fim de jogo</span>
+          <strong id="end-title">Você foi capturado</strong>
+        </div>
+        <p id="end-copy">Os marcadores fecharam o cerco antes da última taça.</p>
+        <button id="restart-button" class="primary">Jogar de novo</button>
+      </section>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

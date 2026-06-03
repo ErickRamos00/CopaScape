@@ -44,6 +44,12 @@ const cutsceneRivalName = document.querySelector('#cutscene-rival-name');
 const cutsceneProgress = document.querySelector('#cutscene-progress');
 const pauseButton = document.querySelector('#pause-button');
 const abilityDock = document.querySelector('#ability-dock');
+const touchControls = document.querySelector('#touch-controls');
+const touchJoystick = document.querySelector('#touch-joystick');
+const touchJoystickKnob = document.querySelector('#touch-joystick-knob');
+const touchTurboButton = document.querySelector('#touch-turbo-button');
+const touchShieldButton = document.querySelector('#touch-shield-button');
+const touchMapButton = document.querySelector('#touch-map-button');
 const teamGrid = document.querySelector('#team-grid');
 const levelGrid = document.querySelector('#level-grid');
 const achievementGrid = document.querySelector('#achievement-grid');
@@ -396,6 +402,13 @@ const state = {
   tutorialStep: 0,
   tutorialTimer: 0,
   keys: new Set(),
+  touch: {
+    moveX: 0,
+    moveZ: 0,
+    sprint: false,
+    joystickPointerId: null,
+    mapVisible: true
+  },
   enemies: [],
   cups: [],
   powerUps: [],
@@ -435,10 +448,19 @@ scene.background = new THREE.Color(0x061126);
 scene.fog = new THREE.Fog(0x061126, 38, 96);
 
 const camera = new THREE.PerspectiveCamera(56, 1, 0.1, 130);
+const mobileRuntimeQuery = window.matchMedia('(max-width: 820px), (pointer: coarse)');
+function isMobileRuntime() {
+  return mobileRuntimeQuery.matches || navigator.maxTouchPoints > 0;
+}
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.15));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+function applyRuntimeQuality() {
+  const mobile = isMobileRuntime();
+  app.classList.toggle('mobile-runtime', mobile);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 0.85 : 1.15));
+  renderer.shadowMap.enabled = !mobile;
+  renderer.shadowMap.type = mobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+}
+applyRuntimeQuality();
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.18;
@@ -3347,6 +3369,21 @@ function populateTeams() {
   });
 }
 
+function resetTouchControls() {
+  state.touch.moveX = 0;
+  state.touch.moveZ = 0;
+  state.touch.sprint = false;
+  state.touch.joystickPointerId = null;
+  touchJoystickKnob?.style.setProperty('transform', 'translate(-50%, -50%)');
+  touchTurboButton?.classList.remove('is-pressed');
+  touchMapButton?.classList.remove('is-pressed');
+}
+
+function setTouchControlsVisible(visible) {
+  touchControls?.classList.toggle('hidden', !visible);
+  if (!visible) resetTouchControls();
+}
+
 function showScreen(screen) {
   [menuScreen, howScreen, levelScreen, achievementsScreen, dailyScreen, rankingScreen, editorScreen, shopScreen, teamScreen, pauseScreen, levelCompleteScreen, gameOverScreen].forEach((item) => item.classList.add('hidden'));
   hideCutscene();
@@ -3356,6 +3393,7 @@ function showScreen(screen) {
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
   abilityDock?.classList.add('hidden');
+  setTouchControlsVisible(false);
   app.classList.remove('game-live');
   message.classList.add('hidden');
   hideNarration();
@@ -3718,6 +3756,9 @@ function beginGame(level = state.selectedLevel) {
   pauseButton.classList.remove('hidden');
   minimap.classList.remove('hidden');
   abilityDock?.classList.remove('hidden');
+  setTouchControlsVisible(true);
+  state.touch.mapVisible = true;
+  touchMapButton?.classList.add('is-pressed');
   app.classList.add('game-live');
   state.running = true;
   state.paused = false;
@@ -3755,6 +3796,7 @@ function endGame(won) {
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
   abilityDock?.classList.add('hidden');
+  setTouchControlsVisible(false);
   pauseScreen.classList.add('hidden');
   hideNarration();
   gameOverScreen.classList.remove('hidden');
@@ -3787,6 +3829,43 @@ function togglePause() {
   setPaused(!state.paused);
 }
 
+function updateJoystickFromPointer(event) {
+  if (!touchJoystick || !touchJoystickKnob) return;
+  const rect = touchJoystick.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const radius = Math.max(42, Math.min(rect.width, rect.height) * 0.34);
+  const rawX = event.clientX - centerX;
+  const rawY = event.clientY - centerY;
+  const distance = Math.hypot(rawX, rawY);
+  const deadZone = radius * 0.16;
+  const scale = distance > radius ? radius / distance : 1;
+  const knobX = distance < deadZone ? 0 : rawX * scale;
+  const knobY = distance < deadZone ? 0 : rawY * scale;
+  state.touch.moveX = knobX / radius;
+  state.touch.moveZ = knobY / radius;
+  touchJoystickKnob.style.transform = `translate(-50%, -50%) translate(${knobX}px, ${knobY}px)`;
+}
+
+function releaseJoystick() {
+  state.touch.moveX = 0;
+  state.touch.moveZ = 0;
+  state.touch.joystickPointerId = null;
+  touchJoystickKnob?.style.setProperty('transform', 'translate(-50%, -50%)');
+}
+
+function setTouchSprint(active) {
+  state.touch.sprint = Boolean(active);
+  touchTurboButton?.classList.toggle('is-pressed', state.touch.sprint);
+}
+
+function toggleTouchMap() {
+  if (!state.running) return;
+  state.touch.mapVisible = !state.touch.mapVisible;
+  minimap.classList.toggle('hidden', !state.touch.mapVisible);
+  touchMapButton?.classList.toggle('is-pressed', state.touch.mapVisible);
+}
+
 function getBestTime(level) {
   return Number(localStorage.getItem(`copaEscapeBestTime:${level}`) || 0);
 }
@@ -3808,6 +3887,7 @@ function showLevelComplete() {
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
   abilityDock?.classList.add('hidden');
+  setTouchControlsVisible(false);
   message.classList.add('hidden');
   hideNarration();
   const seconds = state.elapsedTime || (performance.now() - state.levelStartTime) / 1000;
@@ -4287,7 +4367,11 @@ function updatePlayer(dt) {
   if (state.keys.has('KeyS') || !state.player2.active && state.keys.has('ArrowDown')) direction.z += 1;
   if (state.keys.has('KeyA') || !state.player2.active && state.keys.has('ArrowLeft')) direction.x -= 1;
   if (state.keys.has('KeyD') || !state.player2.active && state.keys.has('ArrowRight')) direction.x += 1;
-  const sprinting = state.keys.has('ShiftLeft') || !state.player2.active && state.keys.has('ShiftRight');
+  if (Math.abs(state.touch.moveX) > 0.03 || Math.abs(state.touch.moveZ) > 0.03) {
+    direction.x += state.touch.moveX;
+    direction.z += state.touch.moveZ;
+  }
+  const sprinting = state.touch.sprint || state.keys.has('ShiftLeft') || !state.player2.active && state.keys.has('ShiftRight');
   const moving = direction.lengthSq() > 0;
   const canSprint = sprinting && state.stamina > 4 && moving;
   const eventSpeedMultiplier = state.activeEvent?.type === 'rain' ? 0.88 : state.activeEvent?.type === 'blackout' ? 0.95 : 1;
@@ -4727,6 +4811,7 @@ function updatePowerUps(dt) {
 }
 
 function spawnCosmeticParticle(position, color, life = 0.8, size = 0.12, velocity = new THREE.Vector3()) {
+  if (isMobileRuntime() && state.cosmeticParticles.length > 90) return;
   const particle = new THREE.Mesh(
     sharedParticleGeometry,
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 })
@@ -4739,6 +4824,7 @@ function spawnCosmeticParticle(position, color, life = 0.8, size = 0.12, velocit
 }
 
 function spawnCollectRing(position, color, life = 0.55, size = 0.85) {
+  if (isMobileRuntime() && state.cosmeticParticles.length > 90) return;
   const ring = new THREE.Mesh(
     sharedCollectRingGeometry,
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.78, depthWrite: false, toneMapped: false })
@@ -4768,7 +4854,7 @@ function spawnFloatingText(position, text, color = '#ffd700') {
 }
 
 function emitGameplayBurst(position, colors = [0xfacc15], count = 18) {
-  const burstCount = Math.min(count, 14);
+  const burstCount = Math.min(count, isMobileRuntime() ? 8 : 14);
   spawnCollectRing(position, colors[0], 0.62, 0.62);
   spawnCollectRing(position.clone().add(new THREE.Vector3(0, 0.18, 0)), colors[1] || colors[0], 0.48, 0.38);
   for (let i = 0; i < burstCount; i += 1) {
@@ -4807,7 +4893,9 @@ function emitTrailParticle(dt, moving, actor = player, turboActive = state.boost
   if ((!trail || trail.id === 'trail_none') && !turboActive) return;
   actor.userData.trailCooldown = Math.max(0, (actor.userData.trailCooldown || 0) - dt);
   if (actor.userData.trailCooldown > 0) return;
-  actor.userData.trailCooldown = turboActive ? 0.022 : trail.id === 'trail_confetti' ? 0.035 : 0.055;
+  actor.userData.trailCooldown = isMobileRuntime()
+    ? turboActive ? 0.06 : trail.id === 'trail_confetti' ? 0.085 : 0.12
+    : turboActive ? 0.022 : trail.id === 'trail_confetti' ? 0.035 : 0.055;
   const colors = turboActive
     ? [0xfacc15, 0x38bdf8, 0xffffff]
     : trail.id === 'trail_confetti'
@@ -5318,6 +5406,7 @@ function updateCamera(immediate = false) {
 
 function resize() {
   const { innerWidth, innerHeight } = window;
+  applyRuntimeQuality();
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -5345,7 +5434,7 @@ function animate() {
     updateCamera();
     state.minimapCooldown -= frameDt;
     if (state.minimapCooldown <= 0) {
-      state.minimapCooldown = 0.12;
+      state.minimapCooldown = isMobileRuntime() ? 0.24 : 0.12;
       drawMiniMap();
     }
     updateHud();
@@ -5371,6 +5460,8 @@ startLevel(1);
 hud.classList.add('hidden');
 abilityDock?.classList.add('hidden');
 window.addEventListener('resize', resize);
+mobileRuntimeQuery.addEventListener?.('change', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 120));
 window.addEventListener('keydown', (event) => {
   if (event.code === 'KeyP' || event.code === 'Escape') {
     event.preventDefault();
@@ -5390,6 +5481,49 @@ window.addEventListener('keydown', (event) => {
   if (!state.paused) state.keys.add(event.code);
 });
 window.addEventListener('keyup', (event) => state.keys.delete(event.code));
+touchJoystick?.addEventListener('pointerdown', (event) => {
+  if (!state.running || state.paused) return;
+  event.preventDefault();
+  state.touch.joystickPointerId = event.pointerId;
+  touchJoystick.setPointerCapture?.(event.pointerId);
+  updateJoystickFromPointer(event);
+}, { passive: false });
+touchJoystick?.addEventListener('pointermove', (event) => {
+  if (state.touch.joystickPointerId !== event.pointerId) return;
+  event.preventDefault();
+  updateJoystickFromPointer(event);
+}, { passive: false });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach((eventName) => {
+  touchJoystick?.addEventListener(eventName, (event) => {
+    if (eventName !== 'lostpointercapture' && state.touch.joystickPointerId !== event.pointerId) return;
+    event.preventDefault?.();
+    releaseJoystick();
+  }, { passive: false });
+});
+touchTurboButton?.addEventListener('pointerdown', (event) => {
+  if (!state.running || state.paused) return;
+  event.preventDefault();
+  ensureAudio();
+  setTouchSprint(true);
+}, { passive: false });
+['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
+  touchTurboButton?.addEventListener(eventName, (event) => {
+    event.preventDefault?.();
+    setTouchSprint(false);
+  }, { passive: false });
+});
+touchShieldButton?.addEventListener('pointerdown', (event) => {
+  if (!state.running || state.paused) return;
+  event.preventDefault();
+  ensureAudio();
+  touchShieldButton.classList.add('is-pressed');
+  useDistraction();
+  setTimeout(() => touchShieldButton?.classList.remove('is-pressed'), 140);
+}, { passive: false });
+touchMapButton?.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+  toggleTouchMap();
+}, { passive: false });
 playButton.addEventListener('click', () => {
   state.selectedLevel = 1;
   state.pendingMode = 'normal';
@@ -5483,6 +5617,7 @@ pauseMenuButton.addEventListener('click', () => {
   state.speedrunStartTime = 0;
   minimap.classList.add('hidden');
   abilityDock?.classList.add('hidden');
+  setTouchControlsVisible(false);
   stopCrowdSound();
   renderLevelSelect();
   showScreen(menuScreen);
@@ -5503,6 +5638,9 @@ nextLevelButton.addEventListener('click', () => {
   pauseButton.classList.remove('hidden');
   minimap.classList.remove('hidden');
   abilityDock?.classList.remove('hidden');
+  setTouchControlsVisible(true);
+  state.touch.mapVisible = true;
+  touchMapButton?.classList.add('is-pressed');
   app.classList.add('game-live');
   state.running = true;
   state.paused = false;

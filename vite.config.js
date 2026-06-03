@@ -1,5 +1,6 @@
 export default {
+  base: './',
   build: {
-    assetsInlineLimit: 2_000_000
+    assetsInlineLimit: 4096
   }
 };

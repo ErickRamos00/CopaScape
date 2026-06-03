@@ -1,0 +1,35 @@
+{
+  "name": "CopaScape - Copa Escape 3D",
+  "short_name": "CopaScape",
+  "description": "Jogo 3D arcade de futebol, fuga e conquista da taca.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#020814",
+  "theme_color": "#061126",
+  "categories": ["games", "sports"],
+  "icons": [
+    {
+      "src": "pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Jogar",
+      "short_name": "Jogar",
+      "description": "Entrar direto no torneio.",
+      "url": "./?play=1",
+      "icons": [
+        {
+          "src": "pwa-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

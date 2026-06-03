@@ -13,6 +13,8 @@ O projeto combina a energia de uma Copa do Mundo com mecanicas de aventura, furt
 - Missoes variadas por fase, incluindo coleta de tacas, roubo de chave, alavancas, fuga por tunel e protecao da taca.
 - HUD esportivo futurista com minimapa, narrador, stamina, bonus, objetivo e informacoes da partida.
 - Menu inicial premium com progressao, moedas, desafios diarios, loja, conquistas, ranking e modo copa.
+- Suporte mobile com joystick virtual, botoes de habilidade, HUD compacto e modo leve automatico.
+- PWA instalavel no celular, com manifest, service worker, icone e orientacao em paisagem.
 - Sistema de XP, niveis, recompensas, conquistas, estrelas por fase e melhores tempos locais.
 - Efeitos de coleta, particulas, power-ups, feedback visual, narrador dinamico e momentos heroicos.
 - Versao standalone em HTML unico para abrir diretamente no navegador.
@@ -38,6 +40,15 @@ As fases aumentam gradualmente a dificuldade:
 | Escudo | `E` |
 | Ver mapa | `M` |
 | Pausar | `P` ou `Esc` |
+
+No celular, o jogo exibe joystick virtual, botao de turbo, botao de escudo e botao de mapa. O botao de tela cheia tenta ativar fullscreen e travar a orientacao em paisagem quando o navegador permite.
+
+## Mobile e PWA
+
+- O modo leve reduz pixel ratio, sombras, particulas, torcida animada, brilhos e luzes dinamicas em aparelhos mais fracos.
+- O app pode ser instalado pela opcao "Adicionar a tela inicial" em navegadores compativeis.
+- O PWA funciona melhor via servidor local, hospedagem HTTPS ou build de producao. Arquivos abertos direto por `file://` nao registram service worker.
+- Para uma publicacao futura na Play Store, o projeto pode ser empacotado com Capacitor ou Cordova usando o build da pasta `dist/`.
 
 ## Tecnologias
 
@@ -108,12 +119,13 @@ Ele pode ser aberto diretamente no navegador, sem servidor local.
 
 ## Roadmap
 
-- Melhorar performance com divisao de codigo e carregamento progressivo de assets.
+- Expandir otimizacoes mobile com carregamento progressivo de assets.
 - Expandir o modo historia com novas cutscenes e escolhas de campanha.
 - Adicionar novos estadios tematicos e chefes exclusivos.
 - Criar mais cosméticos para loja e recompensas de temporada.
 - Evoluir o sistema de replay e melhores momentos.
-- Preparar publicacao em plataformas como itch.io, Steam ou web stores.
+- Empacotar versao mobile com Capacitor ou Cordova.
+- Preparar publicacao em plataformas como itch.io, Steam, Play Store ou web stores.
 
 ## Status
 

@@ -44,6 +44,11 @@ const cutsceneRivalName = document.querySelector('#cutscene-rival-name');
 const cutsceneProgress = document.querySelector('#cutscene-progress');
 const pauseButton = document.querySelector('#pause-button');
 const abilityDock = document.querySelector('#ability-dock');
+const mobileSystemActions = document.querySelector('#mobile-system-actions');
+const fullscreenButton = document.querySelector('#fullscreen-button');
+const menuFullscreenButton = document.querySelector('#menu-fullscreen-button');
+const installAppButton = document.querySelector('#install-app-button');
+const menuInstallButton = document.querySelector('#menu-install-button');
 const touchControls = document.querySelector('#touch-controls');
 const touchJoystick = document.querySelector('#touch-joystick');
 const touchJoystickKnob = document.querySelector('#touch-joystick-knob');
@@ -398,6 +403,11 @@ const state = {
     hidden: false,
     distractionCooldown: 0
   },
+  quality: {
+    mobile: false,
+    lowPower: false,
+    stadiumUpdateCooldown: 0
+  },
   nearDangerTimer: 0,
   tutorialStep: 0,
   tutorialTimer: 0,
@@ -452,13 +462,22 @@ const mobileRuntimeQuery = window.matchMedia('(max-width: 820px), (pointer: coar
 function isMobileRuntime() {
   return mobileRuntimeQuery.matches || navigator.maxTouchPoints > 0;
 }
+function isLowPowerRuntime() {
+  const memory = Number(navigator.deviceMemory || 8);
+  const cores = Number(navigator.hardwareConcurrency || 8);
+  return isMobileRuntime() || memory <= 4 || cores <= 4;
+}
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
 function applyRuntimeQuality() {
   const mobile = isMobileRuntime();
+  const lowPower = isLowPowerRuntime();
+  state.quality.mobile = mobile;
+  state.quality.lowPower = lowPower;
   app.classList.toggle('mobile-runtime', mobile);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 0.85 : 1.15));
-  renderer.shadowMap.enabled = !mobile;
-  renderer.shadowMap.type = mobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+  app.classList.toggle('low-power-runtime', lowPower);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 0.72 : lowPower ? 0.95 : 1.15));
+  renderer.shadowMap.enabled = !lowPower;
+  renderer.shadowMap.type = lowPower ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
 }
 applyRuntimeQuality();
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1076,7 +1095,7 @@ function createGrassTexture() {
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(7, 10);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
+  texture.anisotropy = isLowPowerRuntime() ? 1 : 4;
   return texture;
 }
 
@@ -1368,7 +1387,7 @@ function addStadiumBlock(x, z, w, d, rows, side) {
   for (let row = 0; row < rows; row += 1) {
     const rowHeight = 1.35 + row * 0.5;
     const fanSpan = side === 'north' || side === 'south' ? w * 0.86 : d * 0.86;
-    const fanSpacing = row % 2 === 0 ? 4.85 : 5.15;
+    const fanSpacing = isLowPowerRuntime() ? (row % 2 === 0 ? 9.4 : 10.2) : (row % 2 === 0 ? 4.85 : 5.15);
     const seat = new THREE.Mesh(
       side === 'north' || side === 'south'
         ? new THREE.BoxGeometry(w, 0.36, 1.15)
@@ -1385,7 +1404,7 @@ function addStadiumBlock(x, z, w, d, rows, side) {
 
     const fanCount = Math.floor(fanSpan / fanSpacing);
     for (let i = 0; i < fanCount; i += 1) {
-      if ((i + row) % 13 === 0) continue;
+      if ((i + row) % (isLowPowerRuntime() ? 4 : 13) === 0) continue;
       const fan = createCrowdFan(0x16a34a, 0xfacc15);
       const offset = -fanSpan / 2 + (i + 0.5) * (fanSpan / fanCount);
       const jitter = THREE.MathUtils.randFloat(-0.16, 0.16);
@@ -1626,7 +1645,7 @@ addLargeFlag(-18, 36.4, Math.PI, 0xef4444, 0xf8fafc);
 addLargeFlag(18, 36.4, Math.PI, 0x0a4fff, 0xffffff);
 
 function createStadiumConfetti() {
-  const count = 520;
+  const count = isLowPowerRuntime() ? 150 : 520;
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const palette = [0xffd700, 0x0a4fff, 0x00c853, 0xef4444, 0xffffff];
@@ -1654,7 +1673,7 @@ function createStadiumConfetti() {
 stadiumConfetti = createStadiumConfetti();
 
 function createCrowdSparkles() {
-  const count = 900;
+  const count = isLowPowerRuntime() ? 220 : 900;
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const palette = [0xffd700, 0x38bdf8, 0x22c55e, 0xf8fafc, 0xef4444];
@@ -1730,6 +1749,24 @@ stadiumCrowdSparkles = createCrowdSparkles();
   scene.add(spot.target);
   stadiumSpotLights.push(spot);
 });
+
+function applySceneQuality() {
+  const lowPower = isLowPowerRuntime();
+  sun.castShadow = !lowPower;
+  sun.shadow.mapSize.set(lowPower ? 512 : 1024, lowPower ? 512 : 1024);
+  if (stadiumConfetti) stadiumConfetti.material.opacity = lowPower ? 0.48 : 0.78;
+  if (stadiumCrowdSparkles) stadiumCrowdSparkles.visible = !lowPower;
+  stadiumPointLights.forEach((light, index) => {
+    light.visible = !lowPower || index < 2;
+    light.intensity = (light.userData.baseIntensity || light.intensity) * (lowPower ? 0.72 : 1);
+  });
+  stadiumSpotLights.forEach((light, index) => {
+    light.visible = !lowPower || index < 2;
+    light.intensity = (light.userData.baseIntensity || light.intensity) * (lowPower ? 0.66 : 1);
+  });
+}
+
+applySceneQuality();
 updateStadiumTeamColors(state.selectedTeam);
 
 const player = createPlayer(teams[0]);
@@ -3381,6 +3418,7 @@ function resetTouchControls() {
 
 function setTouchControlsVisible(visible) {
   touchControls?.classList.toggle('hidden', !visible);
+  mobileSystemActions?.classList.toggle('hidden', !(visible && isMobileRuntime()));
   if (!visible) resetTouchControls();
 }
 
@@ -3827,6 +3865,47 @@ function setPaused(paused) {
 
 function togglePause() {
   setPaused(!state.paused);
+}
+
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+let deferredInstallPrompt = null;
+const installButtons = [installAppButton, menuInstallButton].filter(Boolean);
+function updateInstallButtons() {
+  const canShowInstall = !isStandaloneApp() && (Boolean(deferredInstallPrompt) || isMobileRuntime());
+  installButtons.forEach((button) => button.classList.toggle('hidden', !canShowInstall));
+}
+
+async function requestAppInstall() {
+  ensureAudio();
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice.catch(() => null);
+    deferredInstallPrompt = null;
+    updateInstallButtons();
+    return;
+  }
+  showMessage('Instalar app', 'No celular, abra o menu do navegador e escolha Adicionar a tela inicial.');
+}
+
+async function requestFullscreenMode() {
+  ensureAudio();
+  const target = document.documentElement;
+  try {
+    if (!document.fullscreenElement && target.requestFullscreen) {
+      await target.requestFullscreen({ navigationUI: 'hide' });
+    }
+  } catch {
+    showMessage('Tela cheia', 'Seu navegador bloqueou o modo tela cheia nesta tentativa.');
+  }
+
+  try {
+    if (screen.orientation?.lock) await screen.orientation.lock('landscape');
+  } catch {
+    showMessage('Modo paisagem', 'Se o celular nao girar sozinho, deixe a rotacao liberada e vire o aparelho.');
+  }
 }
 
 function updateJoystickFromPointer(event) {
@@ -4811,7 +4890,8 @@ function updatePowerUps(dt) {
 }
 
 function spawnCosmeticParticle(position, color, life = 0.8, size = 0.12, velocity = new THREE.Vector3()) {
-  if (isMobileRuntime() && state.cosmeticParticles.length > 90) return;
+  const particleLimit = state.quality.lowPower ? 52 : 140;
+  if (state.cosmeticParticles.length > particleLimit) return;
   const particle = new THREE.Mesh(
     sharedParticleGeometry,
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 })
@@ -4824,7 +4904,8 @@ function spawnCosmeticParticle(position, color, life = 0.8, size = 0.12, velocit
 }
 
 function spawnCollectRing(position, color, life = 0.55, size = 0.85) {
-  if (isMobileRuntime() && state.cosmeticParticles.length > 90) return;
+  const particleLimit = state.quality.lowPower ? 52 : 140;
+  if (state.cosmeticParticles.length > particleLimit) return;
   const ring = new THREE.Mesh(
     sharedCollectRingGeometry,
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.78, depthWrite: false, toneMapped: false })
@@ -4838,6 +4919,7 @@ function spawnCollectRing(position, color, life = 0.55, size = 0.85) {
 }
 
 function spawnFloatingText(position, text, color = '#ffd700') {
+  if (state.quality.lowPower && state.cosmeticParticles.length > 44) return;
   const sprite = createFloatingTextSprite(text, color);
   sprite.position.copy(position).add(new THREE.Vector3(0, 2.45, 0));
   sprite.scale.set(2.45, 0.8, 1);
@@ -4854,7 +4936,7 @@ function spawnFloatingText(position, text, color = '#ffd700') {
 }
 
 function emitGameplayBurst(position, colors = [0xfacc15], count = 18) {
-  const burstCount = Math.min(count, isMobileRuntime() ? 8 : 14);
+  const burstCount = Math.min(count, state.quality.lowPower ? 6 : isMobileRuntime() ? 8 : 14);
   spawnCollectRing(position, colors[0], 0.62, 0.62);
   spawnCollectRing(position.clone().add(new THREE.Vector3(0, 0.18, 0)), colors[1] || colors[0], 0.48, 0.38);
   for (let i = 0; i < burstCount; i += 1) {
@@ -4917,13 +4999,14 @@ function triggerCelebration() {
     });
   }
   const count = id === 'celebration_fireworks' ? 58 : id === 'celebration_spin' ? 34 : id === 'celebration_wave' ? 42 : 18;
+  const particleCount = state.quality.lowPower ? Math.min(count, 18) : count;
   const palette = id === 'celebration_fireworks'
     ? [0xfacc15, 0x38bdf8, 0x22c55e, 0xef4444, 0xf8fafc]
     : id === 'celebration_wave'
       ? [state.selectedTeam.colors[0], state.selectedTeam.colors[1], 0xfacc15]
       : [0xfacc15, 0xf8fafc];
-  for (let i = 0; i < count; i += 1) {
-    const angle = (i / count) * Math.PI * 2;
+  for (let i = 0; i < particleCount; i += 1) {
+    const angle = (i / particleCount) * Math.PI * 2;
     const speed = id === 'celebration_spin' ? 2.8 : THREE.MathUtils.randFloat(1.4, 4.8);
     const velocity = new THREE.Vector3(Math.cos(angle) * speed, THREE.MathUtils.randFloat(1.2, 4.2), Math.sin(angle) * speed);
     const position = player.position.clone().add(new THREE.Vector3(0, 1.1, 0));
@@ -5043,6 +5126,7 @@ function restoreLighting() {
   stadiumSpotLights.forEach((light) => {
     light.intensity = light.userData.baseIntensity;
   });
+  applySceneQuality();
 }
 
 function endActiveEvent() {
@@ -5250,8 +5334,14 @@ function updateRandomEvents(dt) {
 }
 
 function updateStadium(dt) {
+  if (state.quality.lowPower) {
+    state.quality.stadiumUpdateCooldown -= dt;
+    if (state.quality.stadiumUpdateCooldown > 0) return;
+    state.quality.stadiumUpdateCooldown = 0.14;
+  }
   const time = performance.now() * 0.004;
-  for (let i = 0; i < stadiumFans.length; i += 1) {
+  const fanStride = state.quality.lowPower ? 3 : 1;
+  for (let i = 0; i < stadiumFans.length; i += fanStride) {
     const fan = stadiumFans[i];
     if (i % 5 !== 0) {
       fan.position.y = fan.userData.baseY + Math.sin(time * 0.65 + fan.userData.phase) * 0.025;
@@ -5407,6 +5497,8 @@ function updateCamera(immediate = false) {
 function resize() {
   const { innerWidth, innerHeight } = window;
   applyRuntimeQuality();
+  applySceneQuality();
+  mobileSystemActions?.classList.toggle('hidden', !(state.running && isMobileRuntime()));
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -5459,6 +5551,19 @@ resize();
 startLevel(1);
 hud.classList.add('hidden');
 abilityDock?.classList.add('hidden');
+updateInstallButtons();
+if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => null);
+  });
+}
+if (new URLSearchParams(window.location.search).get('play') === '1') {
+  state.selectedLevel = Math.min(state.unlockedLevel, 1);
+  state.pendingMode = 'normal';
+  state.customLevelActive = false;
+  showScreen(teamScreen);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
 window.addEventListener('resize', resize);
 mobileRuntimeQuery.addEventListener?.('change', resize);
 window.addEventListener('orientationchange', () => setTimeout(resize, 120));
@@ -5524,6 +5629,21 @@ touchMapButton?.addEventListener('pointerdown', (event) => {
   event.preventDefault();
   toggleTouchMap();
 }, { passive: false });
+fullscreenButton?.addEventListener('click', requestFullscreenMode);
+menuFullscreenButton?.addEventListener('click', requestFullscreenMode);
+installAppButton?.addEventListener('click', requestAppInstall);
+menuInstallButton?.addEventListener('click', requestAppInstall);
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  updateInstallButtons();
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  updateInstallButtons();
+});
+window.matchMedia('(display-mode: standalone)').addEventListener?.('change', updateInstallButtons);
+mobileRuntimeQuery.addEventListener?.('change', updateInstallButtons);
 playButton.addEventListener('click', () => {
   state.selectedLevel = 1;
   state.pendingMode = 'normal';

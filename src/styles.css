@@ -503,6 +503,18 @@ body {
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+.header-icon-button.wide-button {
+  min-width: 96px;
+  padding: 0 13px;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.install-app-button {
+  border-color: rgba(255, 215, 0, 0.34);
+  color: #FFD700;
+}
+
 .header-icon-button:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 215, 0, 0.72);
@@ -1802,6 +1814,35 @@ body {
   line-height: 1.1;
 }
 
+.mobile-system-actions {
+  position: fixed;
+  right: max(86px, calc(env(safe-area-inset-right) + 86px));
+  top: max(8px, env(safe-area-inset-top));
+  z-index: 8;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.mobile-system-actions button {
+  min-height: 38px;
+  border: 1px solid rgba(148, 197, 255, 0.26);
+  border-radius: 12px;
+  padding: 0 12px;
+  color: #ffffff;
+  background: rgba(2, 8, 20, 0.74);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.mobile-system-actions .install-app-button {
+  color: #FFD700;
+}
+
 .ability-dock {
   position: fixed;
   right: 34px;
@@ -2923,6 +2964,21 @@ body {
     border-radius: 12px;
   }
 
+  #app.game-live .mobile-system-actions:not(.hidden) {
+    display: flex;
+  }
+
+  #app.game-live .mobile-system-actions {
+    right: calc(max(8px, env(safe-area-inset-right)) + 66px);
+  }
+
+  #app.game-live .mobile-system-actions button {
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 11px;
+    font-size: 0.62rem;
+  }
+
   #app.game-live .hud {
     left: max(8px, env(safe-area-inset-left));
     right: calc(max(8px, env(safe-area-inset-right)) + 62px);
@@ -3027,6 +3083,12 @@ body {
   #app.game-live .pause-button {
     top: auto;
     bottom: calc(max(24px, env(safe-area-inset-bottom)) + 148px);
+  }
+
+  #app.game-live .mobile-system-actions {
+    top: auto;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(max(24px, env(safe-area-inset-bottom)) + 210px);
   }
 
   #app.game-live .touch-joystick {

@@ -1856,7 +1856,7 @@ body {
   background: none;
   box-shadow: none;
   backdrop-filter: none;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .ability-action {
@@ -1865,10 +1865,23 @@ body {
   place-items: center;
   width: 132px;
   height: 132px;
+  border: 0;
   border-radius: 50%;
+  padding: 0;
   color: #ffffff;
+  background: none;
+  cursor: pointer;
+  font: inherit;
   text-align: center;
   filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.38));
+  pointer-events: auto;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.ability-action:hover,
+.ability-action.is-pressed {
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.1) drop-shadow(0 18px 24px rgba(0, 0, 0, 0.38));
 }
 
 .ability-action::before {
@@ -2003,6 +2016,8 @@ body {
   background:
     linear-gradient(180deg, rgba(13, 26, 52, 0.96), rgba(2, 8, 20, 0.92));
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+  cursor: pointer;
+  font: inherit;
 }
 
 .minimap-label::before {
@@ -2011,10 +2026,6 @@ body {
   height: 25px;
   background: url("./assets/ui/hud-map.svg") center / contain no-repeat;
   filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.32));
-}
-
-.minimap.hidden + .minimap-label {
-  display: none;
 }
 
 .minimap-label kbd {
@@ -3039,19 +3050,34 @@ body {
   }
 
   #app.game-live .narrator {
-    top: calc(max(8px, env(safe-area-inset-top)) + 108px);
-    width: min(560px, calc(100vw - 24px));
-    min-height: 58px;
-    padding: 10px 14px;
+    top: calc(max(8px, env(safe-area-inset-top)) + 94px);
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 9px;
+    width: min(430px, calc(100vw - 188px));
+    min-height: 42px;
+    max-height: 54px;
+    padding: 7px 10px;
+    border-radius: 12px;
+    opacity: 0.94;
   }
 
   #app.game-live .narrator-icon {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  #app.game-live .narrator span {
+    display: none;
   }
 
   #app.game-live .narrator strong {
-    font-size: 0.98rem;
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.78rem;
+    line-height: 1.15;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   #app.game-live .minimap {
@@ -3089,6 +3115,11 @@ body {
     top: auto;
     right: max(8px, env(safe-area-inset-right));
     bottom: calc(max(24px, env(safe-area-inset-bottom)) + 210px);
+  }
+
+  #app.game-live .narrator {
+    top: calc(max(8px, env(safe-area-inset-top)) + 168px);
+    width: min(420px, calc(100vw - 24px));
   }
 
   #app.game-live .touch-joystick {

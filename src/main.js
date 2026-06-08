@@ -31,6 +31,7 @@ const gameOverScreen = document.querySelector('#game-over');
 const hud = document.querySelector('#hud');
 const minimap = document.querySelector('#minimap');
 const minimapContext = minimap.getContext('2d');
+const minimapToggleButton = document.querySelector('#minimap-toggle-button');
 const narrator = document.querySelector('#narrator');
 const narratorLine = document.querySelector('#narrator-line');
 const cutscene = document.querySelector('#cutscene');
@@ -49,6 +50,8 @@ const fullscreenButton = document.querySelector('#fullscreen-button');
 const menuFullscreenButton = document.querySelector('#menu-fullscreen-button');
 const installAppButton = document.querySelector('#install-app-button');
 const menuInstallButton = document.querySelector('#menu-install-button');
+const desktopTurboButton = document.querySelector('#desktop-turbo-button');
+const desktopShieldButton = document.querySelector('#desktop-shield-button');
 const touchControls = document.querySelector('#touch-controls');
 const touchJoystick = document.querySelector('#touch-joystick');
 const touchJoystickKnob = document.querySelector('#touch-joystick-knob');
@@ -3430,6 +3433,7 @@ function showScreen(screen) {
   hud.classList.add('hidden');
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
+  setMinimapControlsVisible(false);
   abilityDock?.classList.add('hidden');
   setTouchControlsVisible(false);
   app.classList.remove('game-live');
@@ -3793,10 +3797,10 @@ function beginGame(level = state.selectedLevel) {
   hud.classList.remove('hidden');
   pauseButton.classList.remove('hidden');
   minimap.classList.remove('hidden');
+  setMinimapControlsVisible(true);
   abilityDock?.classList.remove('hidden');
   setTouchControlsVisible(true);
-  state.touch.mapVisible = true;
-  touchMapButton?.classList.add('is-pressed');
+  setMapVisible(true);
   app.classList.add('game-live');
   state.running = true;
   state.paused = false;
@@ -3833,6 +3837,7 @@ function endGame(won) {
   hud.classList.add('hidden');
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
+  setMinimapControlsVisible(false);
   abilityDock?.classList.add('hidden');
   setTouchControlsVisible(false);
   pauseScreen.classList.add('hidden');
@@ -3936,13 +3941,30 @@ function releaseJoystick() {
 function setTouchSprint(active) {
   state.touch.sprint = Boolean(active);
   touchTurboButton?.classList.toggle('is-pressed', state.touch.sprint);
+  desktopTurboButton?.classList.toggle('is-pressed', state.touch.sprint);
+}
+
+function setMinimapControlsVisible(visible) {
+  minimapToggleButton?.classList.toggle('hidden', !visible || isMobileRuntime());
+}
+
+function setMapVisible(visible) {
+  state.touch.mapVisible = Boolean(visible);
+  minimap.classList.toggle('hidden', !state.touch.mapVisible);
+  touchMapButton?.classList.toggle('is-pressed', state.touch.mapVisible);
+  if (minimapToggleButton) {
+    const label = minimapToggleButton.querySelector('span');
+    if (label) label.textContent = state.touch.mapVisible ? 'Ocultar mapa' : 'Ver mapa';
+  }
+}
+
+function toggleMap() {
+  if (!state.running) return;
+  setMapVisible(!state.touch.mapVisible);
 }
 
 function toggleTouchMap() {
-  if (!state.running) return;
-  state.touch.mapVisible = !state.touch.mapVisible;
-  minimap.classList.toggle('hidden', !state.touch.mapVisible);
-  touchMapButton?.classList.toggle('is-pressed', state.touch.mapVisible);
+  toggleMap();
 }
 
 function getBestTime(level) {
@@ -3965,6 +3987,7 @@ function showLevelComplete() {
   hud.classList.add('hidden');
   pauseButton.classList.add('hidden');
   minimap.classList.add('hidden');
+  setMinimapControlsVisible(false);
   abilityDock?.classList.add('hidden');
   setTouchControlsVisible(false);
   message.classList.add('hidden');
@@ -5499,6 +5522,7 @@ function resize() {
   applyRuntimeQuality();
   applySceneQuality();
   mobileSystemActions?.classList.toggle('hidden', !(state.running && isMobileRuntime()));
+  setMinimapControlsVisible(state.running);
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -5578,6 +5602,11 @@ window.addEventListener('keydown', (event) => {
     useDistraction();
     return;
   }
+  if (event.code === 'KeyM') {
+    event.preventDefault();
+    toggleMap();
+    return;
+  }
   if (event.code === 'Enter' && state.player2.active) {
     event.preventDefault();
     useDistraction(player2);
@@ -5629,6 +5658,26 @@ touchMapButton?.addEventListener('pointerdown', (event) => {
   event.preventDefault();
   toggleTouchMap();
 }, { passive: false });
+minimapToggleButton?.addEventListener('click', () => toggleMap());
+desktopTurboButton?.addEventListener('pointerdown', (event) => {
+  if (!state.running || state.paused) return;
+  event.preventDefault();
+  ensureAudio();
+  setTouchSprint(true);
+}, { passive: false });
+['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
+  desktopTurboButton?.addEventListener(eventName, (event) => {
+    event.preventDefault?.();
+    setTouchSprint(false);
+  }, { passive: false });
+});
+desktopShieldButton?.addEventListener('click', () => {
+  if (!state.running || state.paused) return;
+  ensureAudio();
+  useDistraction();
+  desktopShieldButton.classList.add('is-pressed');
+  setTimeout(() => desktopShieldButton?.classList.remove('is-pressed'), 140);
+});
 fullscreenButton?.addEventListener('click', requestFullscreenMode);
 menuFullscreenButton?.addEventListener('click', requestFullscreenMode);
 installAppButton?.addEventListener('click', requestAppInstall);
@@ -5736,6 +5785,7 @@ pauseMenuButton.addEventListener('click', () => {
   state.customLevelActive = false;
   state.speedrunStartTime = 0;
   minimap.classList.add('hidden');
+  setMinimapControlsVisible(false);
   abilityDock?.classList.add('hidden');
   setTouchControlsVisible(false);
   stopCrowdSound();
@@ -5757,10 +5807,10 @@ nextLevelButton.addEventListener('click', () => {
   hud.classList.remove('hidden');
   pauseButton.classList.remove('hidden');
   minimap.classList.remove('hidden');
+  setMinimapControlsVisible(true);
   abilityDock?.classList.remove('hidden');
   setTouchControlsVisible(true);
-  state.touch.mapVisible = true;
-  touchMapButton?.classList.add('is-pressed');
+  setMapVisible(true);
   app.classList.add('game-live');
   state.running = true;
   state.paused = false;
